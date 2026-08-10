@@ -49,8 +49,18 @@ jobs:
             git push
           fi
 
+      # No `if:` guard here on purpose. A step-level env var is not visible to
+      # that same step's `if` expression, so gating on it silently skips the
+      # step forever. A deploy hook that never fires without saying so is the
+      # worst failure mode available: helio.so would serve stale data
+      # indefinitely and nothing would report it. Always run, and be loud.
       - name: Trigger helio.so deploy hook
-        if: ${{ env.VERCEL_DEPLOY_HOOK_URL != '' }}
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
-        run: curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "::warning title=Deploy hook not configured::VERCEL_DEPLOY_HOOK_URL is not set. The dataset was rebuilt but helio.so was NOT notified, and will serve stale data until this secret is added."
+            exit 0
+          fi
+          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
+          echo "helio.so deploy hook triggered."
