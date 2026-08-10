@@ -2,7 +2,7 @@
 
 A public reference log of real incidents in which AI agents caused harm through tool use.
 
-Of 3 entries, action governance would likely have prevented 1, partially 0, no 2, unclear 0.
+Of 7 entries, action governance would likely have prevented 3, partially 1, no 3, unclear 0.
 
 Browse the log at [helio.so/incidents](https://helio.so/incidents).
 

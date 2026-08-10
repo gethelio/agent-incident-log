@@ -132,6 +132,7 @@
           "tenant_isolation_failure",
           "transport_design_flaw",
           "hosting_platform_vulnerability",
+          "unsafe_code_execution",
           "context_loss"
         ]
       }
