@@ -1,0 +1,56 @@
+name: publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'incidents/**'
+      - 'schema/**'
+      - 'scripts/**'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: Install script dependencies
+        working-directory: scripts
+        run: npm ci
+
+      - name: Validate
+        working-directory: scripts
+        run: npm run validate
+
+      - name: Build dist/incidents.json
+        working-directory: scripts
+        run: npm run build
+
+      - name: Commit dist if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dist/incidents.json
+          if git diff --staged --quiet; then
+            echo 'No dist changes'
+          else
+            git commit -m 'chore: regenerate dist/incidents.json'
+            git push
+          fi
+
+      - name: Trigger helio.so deploy hook
+        if: ${{ env.VERCEL_DEPLOY_HOOK_URL != '' }}
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"

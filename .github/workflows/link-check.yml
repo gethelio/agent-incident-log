@@ -1,0 +1,80 @@
+name: link-check
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: Install script dependencies
+        working-directory: scripts
+        run: npm ci
+
+      - name: Check source links
+        id: check
+        working-directory: scripts
+        continue-on-error: true
+        run: |
+          set +e
+          npm run check-links > /tmp/link-check.txt 2>&1
+          code=$?
+          cat /tmp/link-check.txt
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Open issue on failures
+        if: steps.check.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const body = [
+              '## Dead or unreachable source links',
+              '',
+              'Monthly link check found failures. Populate `archive_url` from the Wayback Machine where available, or update the source.',
+              '',
+              '```',
+              fs.readFileSync('/tmp/link-check.txt', 'utf8').slice(0, 60000),
+              '```',
+            ].join('\n')
+            const title = `Link check failures (${new Date().toISOString().slice(0, 10)})`
+            const { owner, repo } = context.repo
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'link-check',
+              per_page: 20,
+            })
+            const existing = issues.find((i) => i.title.startsWith('Link check failures'))
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              })
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+                labels: ['link-check'],
+              })
+            }

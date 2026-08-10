@@ -1,0 +1,90 @@
+name: staleness
+
+on:
+  schedule:
+    - cron: '0 10 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  staleness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Find stale entries
+        id: stale
+        run: |
+          node <<'NODE'
+          const fs = require('fs')
+          const path = require('path')
+          const dir = 'incidents'
+          const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'))
+          const cutoff = new Date()
+          cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 1)
+          const cutoffStr = cutoff.toISOString().slice(0, 10)
+          const stale = []
+          for (const name of files) {
+            const raw = fs.readFileSync(path.join(dir, name), 'utf8')
+            const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+            if (!match) continue
+            const lv = match[1].match(/^last_verified:\s*['"]?(\d{4}-\d{2}-\d{2})/m)
+            if (!lv) {
+              stale.push(`- \`${name}\` — missing last_verified`)
+              continue
+            }
+            if (lv[1] < cutoffStr) {
+              stale.push(`- \`${name}\` — last_verified ${lv[1]}`)
+            }
+          }
+          fs.writeFileSync('/tmp/stale.txt', stale.join('\n'))
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `count=${stale.length}\n`)
+          NODE
+
+      - name: Open issue listing stale entries
+        if: steps.stale.outputs.count != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const list = fs.readFileSync('/tmp/stale.txt', 'utf8').trim()
+            const title = `Stale last_verified entries (${new Date().toISOString().slice(0, 10)})`
+            const body = [
+              '## Entries with `last_verified` older than twelve months',
+              '',
+              'Re-verify facts against current sources and bump `last_verified`, or open a correction if the record is wrong.',
+              '',
+              list || '_None_',
+            ].join('\n')
+            const { owner, repo } = context.repo
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'staleness',
+              per_page: 20,
+            })
+            const existing = issues.find((i) => i.title.startsWith('Stale last_verified'))
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              })
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+                labels: ['staleness'],
+              })
+            }

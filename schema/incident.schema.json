@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://helio.so/schemas/incident.schema.json",
+  "title": "AgentIncident",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date",
+    "title",
+    "organization",
+    "scale",
+    "surface",
+    "tools",
+    "harm",
+    "harm_bearer",
+    "reversible",
+    "root_cause",
+    "prevented_by_action_governance",
+    "sources",
+    "last_verified"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "organization": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "surface": {
+      "type": "string",
+      "enum": [
+        "coding_agent",
+        "browser_agent",
+        "chat_agent",
+        "pipeline",
+        "infrastructure"
+      ]
+    },
+    "agent_stack": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "framework": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "database",
+          "repo",
+          "payments",
+          "comms",
+          "filesystem",
+          "browser",
+          "package_install",
+          "saas_app"
+        ]
+      }
+    },
+    "harm": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "data_destruction",
+          "data_exfiltration",
+          "data_exposure",
+          "credential_exposure",
+          "unauthorized_state_change",
+          "unauthorized_system_access",
+          "financial_loss",
+          "service_disruption",
+          "malicious_code_distribution" ]
+      }
+    },
+    "harm_bearer": {
+      "type": "string",
+      "enum": [
+        "first_party",
+        "third_party",
+        "both",
+        "unclear"
+      ]
+    },
+    "reversible": {
+      "type": "boolean"
+    },
+    "root_cause": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "instruction_not_binding",
+          "missing_approval_gate",
+          "overscoped_credential",
+          "no_environment_matcher",
+          "no_third_party_identity_check",
+          "no_spend_limit",
+          "untrusted_content_as_instruction",
+          "malicious_tool_supply_chain",
+          "no_install_governance",
+          "tenant_isolation_failure",
+          "transport_design_flaw",
+          "hosting_platform_vulnerability",
+          "context_loss"
+        ]
+      }
+    },
+    "prevented_by_action_governance": {
+      "type": "string",
+      "enum": [
+        "likely",
+        "partially",
+        "no",
+        "unclear"
+      ]
+    },
+    "control": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "url",
+          "title",
+          "publisher",
+          "date",
+          "primary"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisher": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "primary": {
+            "type": "boolean"
+          },
+          "archive_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+    "aiid_incident": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "helio_pack": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri"
+    },
+    "last_verified": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "prevented_by_action_governance": {
+            "enum": [
+              "likely",
+              "partially"
+            ]
+          }
+        },
+        "required": [
+          "prevented_by_action_governance"
+        ]
+      },
+      "then": {
+        "required": [
+          "control"
+        ],
+        "properties": {
+          "control": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

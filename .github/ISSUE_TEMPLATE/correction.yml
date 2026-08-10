@@ -1,0 +1,31 @@
+name: Request a correction
+description: Right of reply for a named organisation (or anyone spotting a factual error).
+title: "[correction] "
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Corrections are logged in the entry rather than applied silently. See EDITORIAL_POLICY.md rule 4.
+  - type: input
+    id: entry_id
+    attributes:
+      label: Entry id
+      description: The incident slug (filename without .md), e.g. openclaw-gym-booking-cancellation-2026-08
+      placeholder: example-incident-slug-2026-01
+    validations:
+      required: true
+  - type: textarea
+    id: disputed_claim
+    attributes:
+      label: Disputed claim
+      description: Quote or paraphrase the claim in the entry that is wrong, and what the correct fact is.
+    validations:
+      required: true
+  - type: textarea
+    id: correcting_source
+    attributes:
+      label: Correcting source
+      description: Link(s) that support the correction.
+    validations:
+      required: true

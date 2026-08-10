@@ -1,0 +1,42 @@
+name: Submit an incident
+description: Tell us about an incident. The Helio team will write it up.
+title: "[incident] "
+labels: ["incident-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You do not need to fill in schema fields. Describe what you know and link your sources. The Helio team will draft the entry.
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: A short factual account of the incident.
+      placeholder: An agent with database access deleted a production volume during a routine task...
+    validations:
+      required: true
+  - type: input
+    id: when
+    attributes:
+      label: When did it happen?
+      description: Approximate date is fine (YYYY-MM-DD or month/year).
+      placeholder: 2026-04
+    validations:
+      required: true
+  - type: textarea
+    id: links
+    attributes:
+      label: Source links
+      description: Public URLs that document the incident. Two independent sources help a lot.
+      placeholder: |
+        https://...
+        https://...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: Optional context, corrections, or why you think this belongs in the log.
+    validations:
+      required: false
