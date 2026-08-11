@@ -7,6 +7,10 @@ on:
       - 'incidents/**'
       - 'schema/**'
       - 'scripts/**'
+  # Manual trigger. Rebuilds and republishes the dataset without a content
+  # change — the recovery lever when a deploy hook has failed, or when the
+  # site needs to be forced back into sync.
+  workflow_dispatch:
 
 permissions:
   contents: write
