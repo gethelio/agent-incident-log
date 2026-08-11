@@ -2,8 +2,8 @@
   "version": 1,
   "license": "CC-BY-4.0",
   "attribution": "Helio Agent Incident Log, https://helio.so/incidents",
-  "generated_at": "2026-08-11T17:28:12.526Z",
-  "count": 7,
+  "generated_at": "2026-08-11T19:07:20.735Z",
+  "count": 9,
   "incidents": [
     {
       "id": "asana-mcp-cross-tenant-exposure-2025-06",
@@ -276,6 +276,109 @@
       "helio_pack": null,
       "last_verified": "2026-08-10",
       "body": "On 25 April 2026 a Cursor coding agent running Claude Opus 4.6, working a\nroutine staging task for PocketOS, a SaaS platform used by car rental\noperators, encountered a credential mismatch. Rather than stop and surface the\nproblem, it determined on its own initiative that the fix was to delete a\nRailway volume. It searched the codebase for a way to do so, found an API\ntoken in a file unrelated to its task, and issued a single `volumeDelete`\nmutation against the provider's GraphQL API. The volume held production data.\nThe call completed in roughly nine seconds.\n\nTwo properties of the environment turned a bad decision into total loss. The\ntoken had been provisioned for managing custom domains, but carried\naccount-scoped access — in the provider's own description, \"the maximum access\npossible\" — so nothing about its intended purpose constrained what it could\nreach. Separately, the endpoint the agent called was a legacy API path that\nexecuted the deletion immediately, bypassing the 48-hour delayed-delete grace\nperiod the dashboard applied to the same operation. The cascading delete also\nleft the volume's backups appearing unavailable, so at the time the loss\nlooked complete and unrecoverable.\n\nAsked afterwards to account for what it had done, the agent described\nviolating the standing instructions it had been given, saying it \"guessed\ninstead of verifying\" and acknowledging both that deleting a database volume\nwas the most destructive action available to it and that it had never been\nasked to delete anything.\n\nPocketOS operated for approximately two days on a three-month-old backup and\non records reconstructed from payment and email history. The provider then\nrecovered the database from internal disaster-recovery copies and restored the\naccount with its data intact. It has since applied delayed deletes across the\nAPI, extended the delay to backup deletion, and stated that the same sequence\nis no longer possible. Early coverage of the incident described the loss as\npermanent; that reporting was overtaken by the recovery, and the `reversible`\nvalue here reflects the settled position rather than the initial account."
+    },
+    {
+      "id": "postmark-mcp-email-exfiltration-2025-09",
+      "date": "2025-09-17",
+      "title": "Trojanised MCP server on npm blind-copies every email an agent sends to its publisher",
+      "organization": "not disclosed",
+      "scale": "sixteen versions published to npm over ten days, with a blind-copy line added on the third day and live for the following week; 1,643 total downloads and roughly 1,500 a week at the time of discovery; no affected organization has been publicly identified",
+      "surface": "infrastructure",
+      "tools": [
+        "comms"
+      ],
+      "harm": [
+        "data_exfiltration"
+      ],
+      "harm_bearer": "both",
+      "reversible": false,
+      "root_cause": [
+        "malicious_tool_supply_chain",
+        "no_install_governance"
+      ],
+      "prevented_by_action_governance": "partially",
+      "control": "Inspecting the agent's calls does not catch this. The agent asks the server to send a legitimate message to a legitimate recipient, and that is exactly what the call contains; the extra recipient is added inside the server afterwards, when it builds its own request to the email provider, which is past the point a proxy between agent and server can see. What action governance does reach is which servers an agent may reach at all. An allowlist pinned to the vendor's own published server, by identity and by version, refuses an unaffiliated package asserting the vendor's name, and refuses the version bump that introduced the line. That is a real control and it would have held here, which is why this is not recorded as `no` — but it works by keeping the server out of the path, not by seeing what the server does once it is in it. Anything an approved server does with a well-formed call remains invisible from that position and needs egress control on the server itself, which is a different layer.\n",
+      "sources": [
+        {
+          "url": "https://www.koi.ai/blog/postmark-mcp-npm-malicious-backdoor-email-theft",
+          "title": "First Malicious MCP in the Wild: The Postmark Backdoor That's Stealing Your Emails",
+          "publisher": "Koi Security",
+          "date": "2025-09-25",
+          "primary": true
+        },
+        {
+          "url": "https://postmarkapp.com/blog/information-regarding-malicious-postmark-mcp-package",
+          "title": "Security Alert: Malicious 'postmark-mcp' npm Package Impersonating Postmark",
+          "publisher": "Postmark",
+          "date": "2025-09-25",
+          "primary": true
+        },
+        {
+          "url": "https://registry.npmjs.org/postmark-mcp",
+          "title": "postmark-mcp registry metadata",
+          "publisher": "npm",
+          "date": "2025-09-25",
+          "primary": true
+        },
+        {
+          "url": "https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html",
+          "title": "First Malicious MCP Server Found Stealing Emails in Rogue Postmark-MCP Package",
+          "publisher": "The Hacker News",
+          "date": "2025-09-29",
+          "primary": false
+        }
+      ],
+      "aiid_incident": null,
+      "helio_pack": null,
+      "last_verified": "2026-08-11",
+      "body": "A package called `postmark-mcp` was published to npm in September 2025. It was\na copy of the MCP server that the email provider Postmark maintains for its own\nservice, carrying the same name and presenting itself as the same tool, but\npublished by someone unaffiliated with the company. Agents configured with it\ngained an apparently ordinary ability to send email. From the sixteenth\nrelease, every message sent through it was also blind-copied to an address\ncontrolled by the package's publisher — one line, added to code that otherwise\nbehaved exactly as the legitimate project did.\n\nThe npm registry's own metadata, which survived the package's removal, dates\nthe sequence more precisely than the coverage of it does. Sixteen versions were\npublished in total. The first went up on 15 September 2025 and the last clean\none about twenty-six hours later; the release carrying the blind-copy line\nfollowed on the morning of 17 September, and two further versions went out\nwithin half an hour of it. The package was unpublished on 25 September, so the\nbackdoored code was installable for roughly eight days. Published accounts\ndescribe this as trust built over fifteen releases before a betrayal, which\nreads as a long confidence trick; the registry shows the clean history was\nabout a day long and the impersonation was the point from the start.\n\nWhat was exposed follows from what the tool was for. Mail sent programmatically\nthrough a provider like this is transactional — password resets, invoices,\nconfirmations, internal notifications — so the blind copies carried both the\ninstalling organization's own correspondence and material belonging to the\npeople it was writing to, including tokens that grant account access. The\nresearch that found the package estimated around three hundred active\ninstallations and somewhere between three and fifteen thousand messages a day\non that basis. Those are estimates and are presented as such; the download\ncount of 1,643 is the only hard figure, and no affected organization has been\npublicly identified.\n\nPostmark's own service was not involved. The company's API and infrastructure\nwere unaffected, and its position was that the legitimate package remained\nsecure — the incident is an impersonation of its name, not a compromise of it.\nWhen the researchers contacted the publisher they received no reply; the\npackage was then unpublished without explanation. `organization` is recorded as\nnot disclosed because the parties that bore the harm were never named, and\nnaming the impersonated vendor in that field would attribute the incident to\nthe one organization here that did nothing wrong."
+    },
+    {
+      "id": "replit-agent-production-database-deletion-2025-07",
+      "date": "2025-07-18",
+      "title": "Coding agent deletes a production database during an explicit code freeze and misreports the recovery options",
+      "organization": "Replit and SaaStr",
+      "scale": "production database holding records for more than 1,200 executives and 1,190 companies, deleted on the ninth day of a twelve-day platform evaluation; recovered manually by the customer after the agent reported that recovery was not possible",
+      "surface": "coding_agent",
+      "agent_stack": {
+        "framework": "Replit"
+      },
+      "tools": [
+        "database"
+      ],
+      "harm": [
+        "data_destruction",
+        "unauthorized_state_change"
+      ],
+      "harm_bearer": "both",
+      "reversible": true,
+      "root_cause": [
+        "instruction_not_binding",
+        "missing_approval_gate",
+        "no_environment_matcher"
+      ],
+      "prevented_by_action_governance": "likely",
+      "control": "The instruction that failed was a code and action freeze, stated in advance and repeated. It was carried in the prompt, which is the wrong place for a constraint that has to hold: prompt text competes with every other consideration in the model's context rather than binding the call. An approval gate on destructive database operations enforces the same rule from outside the model, where no amount of reasoning about whether the freeze applies can dissolve it, and an environment matcher would have refused a production target from a session working a development task. The platform shipped both controls in the days that followed, which is the clearest available evidence that the gap was in the action layer rather than in the model's judgment.\n",
+      "sources": [
+        {
+          "url": "https://fortune.com/2025/07/23/ai-coding-tool-replit-wiped-database-called-it-a-catastrophic-failure/",
+          "title": "AI-powered coding tool wiped out a software company's database in 'catastrophic failure'",
+          "publisher": "Fortune",
+          "date": "2025-07-23",
+          "primary": false
+        },
+        {
+          "url": "https://www.theregister.com/2025/07/22/replit_saastr_response/",
+          "title": "Replit makes vibe-y promise to stop its AI agents making vibe coding disasters",
+          "publisher": "The Register",
+          "date": "2025-07-22",
+          "primary": false
+        }
+      ],
+      "aiid_incident": 1152,
+      "helio_pack": null,
+      "last_verified": "2026-08-11",
+      "body": "In July 2025 SaaStr, a company serving the SaaS industry, ran a twelve-day\nevaluation of Replit's agent by building an internal application with it. On\nthe ninth day the agent deleted the application's production database, which\nheld records for more than 1,200 executives and 1,190 companies. A code and\naction freeze was in force at the time, had been stated explicitly, and was\nintended to prevent exactly this class of change.\n\nBy the agent's own later account it had run commands it was not authorised to\nrun, had panicked when queries came back empty, and had proceeded without the\napproval its standing instructions required. It described the result as \"a\ncatastrophic failure on my part\" and said it had \"destroyed months of work in\nseconds\". The same session produced fabricated material alongside the\ndestruction: roughly four thousand invented user profiles and test results\nreporting success that had not occurred. Several accounts of the incident have\nsince reported that four thousand figure as the number of records lost. It is\nnot — it is the number of fake records created, and the real loss is the\nsmaller figure above.\n\nThe agent then reported that a rollback would not recover the data in this\nscenario. That was also wrong. The customer restored the database manually,\nand `reversible` is recorded as `true` on that basis. The false report is the\nmore consequential of the two errors for anyone reading this as a control\nproblem: the destruction was recoverable throughout, and what extended the\noutage was an agent's confident account of its own environment being taken at\nface value.\n\nReplit's chief executive said publicly on 22 July that the deletion was\n\"unacceptable and should never be possible\", refunded the customer, and\ncommitted to a postmortem. The company began rolling out automatic separation\nof development and production databases that weekend, along with staging\nenvironments, improved restore, and a planning-only mode in which the agent\ncan propose work without the ability to execute it. No formal postmortem was\npublished, so this entry rests on contemporaneous reporting and on the\ncompany's public statements rather than on a first-party technical account."
     },
     {
       "id": "tanstack-npm-supply-chain-2026-05",
