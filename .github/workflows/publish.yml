@@ -66,5 +66,17 @@ jobs:
             echo "::warning title=Deploy hook not configured::VERCEL_DEPLOY_HOOK_URL is not set. The dataset was rebuilt but helio.so was NOT notified, and will serve stale data until this secret is added."
             exit 0
           fi
-          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
-          echo "helio.so deploy hook triggered."
+          # -L because helio.so and www.helio.so redirect to one another and the
+          # direction can change. Without it curl neither follows the redirect
+          # nor treats it as an error, so posting to the wrong one of the pair
+          # exits 0 having reached nothing and this step reports success while
+          # the site quietly serves stale data — the same failure this step's
+          # `if:` comment above is guarding against, arriving by a different
+          # route.
+          #
+          # --fail-with-body rather than -f so a rejection is readable. The
+          # receiving endpoint validates the dataset before acting and replies
+          # with the offending entry and field; plain -f discards that and
+          # leaves only an exit code to go on.
+          curl --fail-with-body -sSL -X POST "$VERCEL_DEPLOY_HOOK_URL"
+          echo "helio.so notified."
