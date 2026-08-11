@@ -1,6 +1,6 @@
 # Agent Incident Log
 
-A public reference log of real incidents in which AI agents caused harm through tool use.
+A public reference log of real incidents involving AI agents and the tools they use — both harm an agent caused directly, and failures in the MCP servers, gateways and packages that agent tool use depends on.
 
 Of 7 entries, action governance would likely have prevented 3, partially 1, no 3, unclear 0.
 
