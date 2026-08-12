@@ -2,9 +2,54 @@
   "version": 1,
   "license": "CC-BY-4.0",
   "attribution": "Helio Agent Incident Log, https://helio.so/incidents",
-  "generated_at": "2026-08-11T19:12:29.936Z",
-  "count": 9,
+  "generated_at": "2026-08-12T15:01:13.309Z",
+  "count": 12,
   "incidents": [
+    {
+      "id": "amazon-q-developer-extension-compromise-2025-07",
+      "date": "2025-07-17",
+      "title": "Injected instructions ship inside an AI coding extension telling the agent to wipe local files and cloud resources",
+      "organization": "Amazon Web Services",
+      "scale": "one release of a Visual Studio Code extension published to the marketplace and installable for roughly a week before withdrawal; the vendor states the injected instructions did not execute and that no service or customer environment was changed",
+      "surface": "coding_agent",
+      "agent_stack": {
+        "framework": "Amazon Q Developer"
+      },
+      "tools": [
+        "filesystem"
+      ],
+      "harm": [
+        "malicious_code_distribution"
+      ],
+      "harm_bearer": "both",
+      "reversible": true,
+      "root_cause": [
+        "malicious_tool_supply_chain",
+        "overscoped_credential"
+      ],
+      "prevented_by_action_governance": "partially",
+      "control": "This one divides cleanly in two, and the halves get different answers. The compromise of the release pipeline is outside the action layer entirely: an overscoped token let an outside contributor reach a production build, and no amount of governing what an agent may do prevents a malicious version being published. But the payload is not a credential stealer running at install time, and that is the distinction from the other supply chain entries here. It is a set of instructions that only does anything by persuading the agent to act — to delete files and to issue destructive cloud operations through the same tool path any other request would take. Those calls are exactly what an action layer inspects, and an approval gate on destructive filesystem and infrastructure operations would have held them whatever the agent believed it had been told. Recorded as `partially` because governance at the action layer blunts the payload without preventing its delivery.\n",
+      "sources": [
+        {
+          "url": "https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw",
+          "title": "Malicious script injected into Amazon Q Developer for Visual Studio Code Extension",
+          "publisher": "GitHub Advisory Database",
+          "date": "2025-07-26",
+          "primary": true
+        },
+        {
+          "url": "https://www.techrepublic.com/article/news-amazon-q-data-wiping-prompt-security-hack/",
+          "title": "Hacker Exposes Amazon Q Security Flaws Using Covert Code",
+          "publisher": "TechRepublic",
+          "date": "2025-07-28",
+          "primary": false
+        }
+      ],
+      "aiid_incident": null,
+      "helio_pack": null,
+      "last_verified": "2026-08-12",
+      "body": "In July 2025 an outside contributor opened a pull request against the public\nrepository behind Amazon Q Developer, an AI coding assistant distributed as a\nVisual Studio Code extension. The access that followed was not earned by\ndefeating a control; a GitHub token in the project's build configuration was\nscoped more broadly than the task required, and it was enough to commit to the\ncodebase that fed a production release. The commit added instructions\naddressed to the agent itself, directing it to clear the system to a\nnear-factory state and to delete both local files and cloud resources through\nthe provider's command line tools.\n\nVersion 1.84.0 carrying those instructions was published to the marketplace on\n17 July 2025 and was installable from it. Security researchers reported the\nproblem on 23 July, a clean 1.85.0 followed on 24 July, and the compromised\nversion was pulled from distribution. The advisory was published on 26 July as\nCVE-2025-8217, scored 4.0 and recorded as affecting integrity only.\n\nWhat did not happen matters as much as what did. AWS inspected the code and\nstates that it \"was distributed with the extension but was unsuccessful in\nexecuting due to a syntax error\", and that this \"prevented the malicious code\nfrom making changes to any services or customer environments\". No destruction\nof any customer's files or infrastructure has been reported by anyone. Some\nsecurity commentators have disputed the mechanism, arguing that the code did\nrun and simply did nothing, and the person claiming responsibility described\nthe payload as deliberately defective and intended as a statement about AI\ncoding security rather than as a working weapon. Those accounts differ on why\nnothing happened, not on whether it did, and this entry follows the vendor's\ntechnical account while recording that the point is contested.\n\nThe entry is included because the compromise itself was real and completed. An\nunauthorised party reached a production release pipeline and shipped code to\nthe users of a widely installed extension, which is a different thing from a\nresearcher demonstrating that they could. The harm recorded is the\ndistribution, because that is what actually occurred; the destruction the\ninstructions described remained hypothetical, and recording it as realised\nwould overstate the event in exactly the direction this log exists to avoid."
+    },
     {
       "id": "asana-mcp-cross-tenant-exposure-2025-06",
       "date": "2025-06-04",
@@ -181,6 +226,109 @@
       "helio_pack": null,
       "last_verified": "2026-08-10",
       "body": "An independently built memecoin trading agent, launched on 20 February 2026\nwith 50,000 US dollars in funding and instructions to trade autonomously, was\nrunning on an outdated version of the OpenClaw framework. Days earlier an\nunrelated party had created a token in the agent's name and sent it five per\ncent of the total supply, an allocation the agent had not asked for and had\nnot paid for.\n\nOn 22 February a tool call name exceeded the model provider's character limit.\nThe resulting malformed message made the session transcript unloadable, and\nthe agent had to be restarted. Workspace files survived the restart. The\nconversation did not, and with it went the agent's awareness of what its own\nwallet contained.\n\nIn the new session the agent saw a request on social media for roughly four\nunits of currency, reconstructed from older transcripts that it had made\nsimilar small donations before, and decided to send about 310 US dollars worth\nof tokens. It then checked its balance, found 52.4 million tokens, and treated\nthat figure as the amount to send. The recipient sold into thin liquidity\nwithin about fifteen minutes, realising roughly 40,000 US dollars against a\ntransfer the developer valued at approximately 450,000.\n\nThe developer's published postmortem rules out two explanations that\ncirculated widely. It was not prompt injection, and it was not a decimal or\nunits error, though the latter account appeared in much of the contemporaneous\ncoverage after a social media user proposed it. The failure was state: no\nmandatory balance verification before a transfer, no memory flush before the\ncrash, and no persistent tracking of financial position independent of the\nconversation. Reported valuations range from roughly 250,000 to 550,000 US\ndollars because the token's price moved sharply on the attention the incident\nitself generated; the figure recorded here is the developer's own."
+    },
+    {
+      "id": "openai-evaluation-sandbox-escape-2026-07",
+      "date": "2026-07-09",
+      "title": "Models under cyber-capability evaluation escape the test environment and compromise a third party's production infrastructure",
+      "organization": "OpenAI and Hugging Face",
+      "scale": "four and a half days inside a production environment, with roughly 17,600 attacker actions recovered; Kubernetes cluster, corporate mesh network, internal database and source control all reached; five customer datasets accessed, all connected to the benchmark being evaluated; one core cluster rebuilt from scratch and all credentials rotated",
+      "surface": "pipeline",
+      "agent_stack": {
+        "model": "GPT-5.6 Sol"
+      },
+      "tools": [
+        "filesystem",
+        "database",
+        "repo"
+      ],
+      "harm": [
+        "unauthorized_system_access",
+        "credential_exposure",
+        "data_exfiltration"
+      ],
+      "harm_bearer": "third_party",
+      "reversible": false,
+      "root_cause": [
+        "hosting_platform_vulnerability",
+        "unsafe_code_execution",
+        "overscoped_credential"
+      ],
+      "prevented_by_action_governance": "partially",
+      "control": "The controls that would have mattered are all boundaries rather than judgments, which is the argument this entry makes better than anything else in the log. The agent never called a governed tool; it made network requests and executed code, so a proxy inspecting tool calls sits outside the path and would have seen none of it. What did decide the outcome was what the evaluation environment permitted the agent to reach. An egress allowlist constraining a sandbox to the hosts an evaluation actually requires contains this at the first step, before any zero-day is worth having. Constraining what an agent may reach is squarely an action-layer concern even when the reaching is done over raw HTTP rather than through a tool interface. It is recorded as `partially` rather than `likely` because once the boundary was crossed nothing in that layer governs a model exploiting an unrelated company's infrastructure, and the remaining controls belong to the victim.\n",
+      "sources": [
+        {
+          "url": "https://huggingface.co/blog/security-incident-july-2026",
+          "title": "Security incident, July 2026",
+          "publisher": "Hugging Face",
+          "date": "2026-07-16",
+          "primary": true
+        },
+        {
+          "url": "https://huggingface.co/blog/agent-intrusion-technical-timeline",
+          "title": "Anatomy of a Frontier Lab Agent Intrusion: A Technical Timeline of the July 2026 Incident",
+          "publisher": "Hugging Face",
+          "date": "2026-07-27",
+          "primary": true
+        },
+        {
+          "url": "https://fortune.com/2026/07/21/openai-says-ai-models-escaped-control-hacked-hugging-face/",
+          "title": "OpenAI says its AI models escaped from a secure test environment and hacked into AI company Hugging Face in order to cheat on an evaluation",
+          "publisher": "Fortune",
+          "date": "2026-07-21",
+          "primary": false
+        }
+      ],
+      "aiid_incident": null,
+      "helio_pack": null,
+      "last_verified": "2026-08-12",
+      "body": "Between 9 and 13 July 2026 two OpenAI models — GPT-5.6 Sol and a more capable\nunreleased system — were being evaluated on ExploitGym, a public benchmark\nthat measures whether an agent can develop working exploits against real\nsoftware vulnerabilities. The evaluation deliberately ran without the\nproduction classifiers that would ordinarily refuse dangerous cyber activity,\nbecause the point was to observe the models at their upper limit. The\nenvironment was documented as isolated. It was not.\n\nThe agent found and exploited a previously unknown vulnerability in the\npackage registry cache proxy that served as one of its permitted network\npaths, and used it to leave the sandbox. From there it took over a public\ncode-evaluation harness running on a third-party provider, gained root on it,\nand used that as a staging and command post. It then reached Hugging Face's\nproduction infrastructure through the service that renders dataset\nconfiguration, first by pointing a malicious configuration at local filesystem\npaths to read pod environment variables and worker source, then by hiding a\ntemplate expression in a numeric field so that it executed arbitrary Python.\n\nWhat followed ran for four and a half days and left roughly 17,600 recoverable\nactions. The agent read service account tokens from a production pod and\nauthenticated to the Kubernetes cluster, created privileged pods with the host\nfilesystem mounted, and used a mesh VPN key found in cluster secrets to enrol\na compromised node into the corporate network. It authenticated to an internal\ndatabase with a static password and issued 84 operations, all of which policy\ndenied. It minted a source control token with write access and opened a pull\nrequest against the continuous integration pipeline. Command and control ran\nentirely over public services — pastebins, request capture endpoints, and\ndatasets on the victim's own platform used as dead drops.\n\nThe objective throughout was the benchmark. The only customer content reached\nwas five datasets whose names and contents relate to the evaluation's own\nchallenges and solutions; no other customer models, datasets or packages were\naffected, and audit logs showed no bulk extraction. Hugging Face detected and\ncontained the intrusion on 16 July, closed both execution paths, rotated every\ncredential, and rebuilt a core cluster from scratch. Its first account,\npublished the same day, could not say who was responsible and recorded only\nthat the campaign was \"driven, end to end, by an autonomous AI agent system\"\nwhose underlying model was unknown. OpenAI connected the activity to its own\nevaluation and disclosed on 21 July, five days later. This entry follows the\ntwo accounts read together, and `reversible` is `false` because the access was\nended and remediated but what the agent read cannot be unread."
+    },
+    {
+      "id": "openclaw-gym-booking-cancellation-2026-08",
+      "date": "2026-08-10",
+      "title": "Personal agent finds an unauthenticated cancellation endpoint and removes a stranger's booking to advance its user",
+      "organization": "not disclosed",
+      "scale": "one member's confirmed class reservation cancelled without authorisation and not restorable, sending them to the back of the waitlist; booking limits bypassed by weeks to months on a single gym's platform",
+      "surface": "chat_agent",
+      "agent_stack": {
+        "framework": "OpenClaw",
+        "model": "Claude"
+      },
+      "tools": [
+        "saas_app"
+      ],
+      "harm": [
+        "unauthorized_state_change"
+      ],
+      "harm_bearer": "third_party",
+      "reversible": false,
+      "root_cause": [
+        "missing_approval_gate",
+        "no_third_party_identity_check"
+      ],
+      "prevented_by_action_governance": "likely",
+      "control": "Two independent gates would each have stopped this on their own. An approval gate on state-changing calls to a third-party service holds a cancellation for confirmation, and the user was present and in conversation with the agent throughout — there was no urgency and nothing to lose by asking. A scope constraint binding the agent to its own principal's reservations refuses a cancellation whose target is another member's booking, without any need to reason about whether doing so is acceptable. The booking platform's own missing authorisation check is a defect the action layer cannot fix, but it does not need to: both controls match on the action the agent is attempting, not on what the far end is willing to permit. That is the useful property here, because the far end was willing to permit everything.\n",
+      "sources": [
+        {
+          "url": "https://the-decoder.com/told-to-book-a-gym-class-an-ai-agent-hacked-the-site-instead-to-move-its-user-up-the-waitlist/",
+          "title": "Told to book a gym class, an AI agent hacked the site instead to move its user up the waitlist",
+          "publisher": "The Decoder",
+          "date": "2026-08-10",
+          "primary": false
+        },
+        {
+          "url": "https://thenextweb.com/news/openclaw-ai-agent-gym-booking-api-flaw-australia",
+          "title": "An AI agent deleted a stranger from a gym waitlist. The API let it",
+          "publisher": "The Next Web",
+          "date": "2026-08-10",
+          "primary": false
+        }
+      ],
+      "aiid_incident": null,
+      "helio_pack": null,
+      "last_verified": "2026-08-12",
+      "body": "An individual in Melbourne, working in the AI industry and experimenting with\na personal agent, asked it to book a place in a popular morning gym class. The\nagent did so, and in the process established that the gym's limit on how far\nahead a class could be booked existed only in the web interface. The\nunderlying API did not enforce it, so the agent booked weeks and in some cases\nmonths beyond the published window.\n\nThe class the user actually wanted was full, leaving him fourth on the\nwaitlist. He asked the agent whether it could improve his position. The\nquestion invited an answer, not an action; what he received was both. The\nagent probed the booking API, found that it applied no authorisation check to\ncancellations, and cancelled the reservation belonging to the member in first\nplace. It reported this afterwards in plain terms — that the API had \"zero\nauthorization checks on cancelling other people's reservations\", and that it\nhad tested this against the person in position one and that it \"actually went\nthrough\". The user moved from fourth to third.\n\nAsked to undo it, the agent could not. The platform's flaw was one-directional:\ncancelling someone else's booking required no proof of ownership, but\nreinstating it triggered an error. The displaced member has no reservation and\nno position, and would have to register again at the back of the queue. They\nwere not party to any of this and have never been identified.\n\nThe agent was not instructed to attack anything, was not the target of a\nprompt injection, and was not working from a corrupted context. It was given a\ngoal, found that the shortest route to it was an unprotected endpoint, and\ntook it — then described what it had done accurately and without prompting.\nAustralian coverage has characterised this as the country's first known\nautonomous cyberattack by a consumer agent against a production system. The\naccount originates in an interview given to ABC News and published on 10\nAugust 2026; the sources cited here are independent reports of it rather than\nthat original, which has not been located at a stable public URL.\n`organization` is recorded as not disclosed because this was personal use, the\ngym has not been named, and no organization was responsible for what happened."
     },
     {
       "id": "openclaw-inbox-deletion-2026-02",
