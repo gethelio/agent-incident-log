@@ -16,7 +16,7 @@ harm:
   - credential_exposure
   - data_exfiltration
 harm_bearer: third_party
-reversible: false
+reversible: 'no'
 root_cause:
   - hosting_platform_vulnerability
   - unsafe_code_execution
@@ -96,5 +96,5 @@ published the same day, could not say who was responsible and recorded only
 that the campaign was "driven, end to end, by an autonomous AI agent system"
 whose underlying model was unknown. OpenAI connected the activity to its own
 evaluation and disclosed on 21 July, five days later. This entry follows the
-two accounts read together, and `reversible` is `false` because the access was
+two accounts read together, and `reversible` is `no` because the access was
 ended and remediated but what the agent read cannot be unread.

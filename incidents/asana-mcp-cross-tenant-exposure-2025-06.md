@@ -10,7 +10,7 @@ tools:
 harm:
   - data_exposure
 harm_bearer: third_party
-reversible: false
+reversible: 'no'
 root_cause:
   - tenant_isolation_failure
 prevented_by_action_governance: 'no'

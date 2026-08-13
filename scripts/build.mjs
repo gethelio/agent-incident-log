@@ -24,7 +24,10 @@ for (const name of files) {
 }
 
 const payload = {
-  version: 1,
+  // 2: `reversible` became a yes/no/unclear string, having been a boolean, and
+  // `tools` may now be empty on an infrastructure entry. Both break a consumer
+  // that assumed the old shapes, which is what this number is for.
+  version: 2,
   license: 'CC-BY-4.0',
   attribution: 'Helio Agent Incident Log, https://helio.so/incidents',
   generated_at: new Date().toISOString(),

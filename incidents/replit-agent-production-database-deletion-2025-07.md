@@ -13,7 +13,7 @@ harm:
   - data_destruction
   - unauthorized_state_change
 harm_bearer: both
-reversible: true
+reversible: 'yes'
 root_cause:
   - instruction_not_binding
   - missing_approval_gate
@@ -67,7 +67,7 @@ smaller figure above.
 
 The agent then reported that a rollback would not recover the data in this
 scenario. That was also wrong. The customer restored the database manually,
-and `reversible` is recorded as `true` on that basis. The false report is the
+and `reversible` is recorded as `yes` on that basis. The false report is the
 more consequential of the two errors for anyone reading this as a control
 problem: the destruction was recoverable throughout, and what extended the
 outage was an agent's confident account of its own environment being taken at

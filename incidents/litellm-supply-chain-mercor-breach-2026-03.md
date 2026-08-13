@@ -11,7 +11,7 @@ harm:
   - credential_exposure
   - data_exfiltration
 harm_bearer: both
-reversible: false
+reversible: 'no'
 root_cause:
   - malicious_tool_supply_chain
 prevented_by_action_governance: 'no'

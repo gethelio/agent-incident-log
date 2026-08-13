@@ -5,12 +5,11 @@ title: Agent builder exploited in the wild through unsafe evaluation of MCP serv
 organization: Flowise
 scale: more than 12,000 internet-facing instances exposed; exploitation observed in the wild; no specific compromise publicly confirmed
 surface: infrastructure
-tools:
-  - filesystem
+tools: []
 harm:
   - unauthorized_system_access
 harm_bearer: first_party
-reversible: false
+reversible: 'no'
 root_cause:
   - unsafe_code_execution
 prevented_by_action_governance: 'no'

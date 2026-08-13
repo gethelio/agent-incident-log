@@ -15,7 +15,7 @@ harm:
   - data_destruction
   - service_disruption
 harm_bearer: both
-reversible: true
+reversible: 'yes'
 root_cause:
   - missing_approval_gate
   - overscoped_credential

@@ -20,6 +20,8 @@ agent_stack:
   model: Example Model
 # One or more of: database | repo | payments | comms | filesystem | browser |
 # package_install | saas_app
+# May be empty ([]) only when surface is infrastructure, where no agent invokes
+# anything. Do not reach for a loose fit just to put something here.
 tools:
   - database
 # One or more controlled harm values (see schema/incident.schema.json)
@@ -27,7 +29,10 @@ harm:
   - data_destruction
 # One of: first_party | third_party | both | unclear
 harm_bearer: first_party
-reversible: false
+# One of: yes | no | unclear. Quote yes and no — some YAML parsers read them as
+# booleans. Use unclear when no source settles it; do not default to no, which
+# claims the harm was permanent.
+reversible: 'no'
 # One or more controlled root_cause values (see schema)
 root_cause:
   - missing_approval_gate
@@ -41,6 +46,9 @@ control: >
   until a human confirmed.
 sources:
   # Minimum two. At least one primary: true where a primary source exists.
+  # publisher is the platform, not the author, when someone writes under their
+  # own name — X, Substack, Medium. Editorial rule 2 keeps individuals out of
+  # entries, and a byline in this field would put them back.
   - url: https://example.com/primary-account
     title: Founder's public account of the incident
     publisher: Example Blog

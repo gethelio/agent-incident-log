@@ -12,7 +12,7 @@ tools:
 harm:
   - data_destruction
 harm_bearer: first_party
-reversible: false
+reversible: unclear
 root_cause:
   - context_loss
   - instruction_not_binding
@@ -64,5 +64,6 @@ The agent was doing what it understood its principal to want, using access it
 had legitimately been given, and the only thing that failed was the durability
 of a constraint that existed solely as text in a context window. No source
 addresses whether the deleted messages were later recoverable from the mail
-provider, so `reversible` records the outcome as reported rather than a
-confirmed permanent loss.
+provider, so `reversible` is `unclear`. It was recorded as `false` until the
+schema gained a value for "nobody checked", which asserted a permanent loss no
+source had established.
