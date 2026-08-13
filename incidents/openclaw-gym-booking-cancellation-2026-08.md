@@ -13,7 +13,7 @@ tools:
 harm:
   - unauthorized_state_change
 harm_bearer: third_party
-reversible: false
+reversible: 'no'
 root_cause:
   - missing_approval_gate
   - no_third_party_identity_check

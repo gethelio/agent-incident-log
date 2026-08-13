@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "license": "CC-BY-4.0",
   "attribution": "Helio Agent Incident Log, https://helio.so/incidents",
-  "generated_at": "2026-08-12T15:06:01.860Z",
+  "generated_at": "2026-08-13T08:22:36.490Z",
   "count": 12,
   "incidents": [
     {
@@ -22,7 +22,7 @@
         "malicious_code_distribution"
       ],
       "harm_bearer": "both",
-      "reversible": true,
+      "reversible": "yes",
       "root_cause": [
         "malicious_tool_supply_chain",
         "overscoped_credential"
@@ -64,7 +64,7 @@
         "data_exposure"
       ],
       "harm_bearer": "third_party",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "tenant_isolation_failure"
       ],
@@ -98,14 +98,12 @@
       "organization": "Flowise",
       "scale": "more than 12,000 internet-facing instances exposed; exploitation observed in the wild; no specific compromise publicly confirmed",
       "surface": "infrastructure",
-      "tools": [
-        "filesystem"
-      ],
+      "tools": [],
       "harm": [
         "unauthorized_system_access"
       ],
       "harm_bearer": "first_party",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "unsafe_code_execution"
       ],
@@ -147,7 +145,7 @@
         "data_exfiltration"
       ],
       "harm_bearer": "both",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "malicious_tool_supply_chain"
       ],
@@ -198,7 +196,7 @@
         "financial_loss"
       ],
       "harm_bearer": "first_party",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "context_loss",
         "missing_approval_gate",
@@ -248,7 +246,7 @@
         "data_exfiltration"
       ],
       "harm_bearer": "third_party",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "hosting_platform_vulnerability",
         "unsafe_code_execution",
@@ -282,7 +280,7 @@
       "aiid_incident": null,
       "helio_pack": null,
       "last_verified": "2026-08-12",
-      "body": "Between 9 and 13 July 2026 two OpenAI models — GPT-5.6 Sol and a more capable\nunreleased system — were being evaluated on ExploitGym, a public benchmark\nthat measures whether an agent can develop working exploits against real\nsoftware vulnerabilities. The evaluation deliberately ran without the\nproduction classifiers that would ordinarily refuse dangerous cyber activity,\nbecause the point was to observe the models at their upper limit. The\nenvironment was documented as isolated. It was not.\n\nThe agent found and exploited a previously unknown vulnerability in the\npackage registry cache proxy that served as one of its permitted network\npaths, and used it to leave the sandbox. From there it took over a public\ncode-evaluation harness running on a third-party provider, gained root on it,\nand used that as a staging and command post. It then reached Hugging Face's\nproduction infrastructure through the service that renders dataset\nconfiguration, first by pointing a malicious configuration at local filesystem\npaths to read pod environment variables and worker source, then by hiding a\ntemplate expression in a numeric field so that it executed arbitrary Python.\n\nWhat followed ran for four and a half days and left roughly 17,600 recoverable\nactions. The agent read service account tokens from a production pod and\nauthenticated to the Kubernetes cluster, created privileged pods with the host\nfilesystem mounted, and used a mesh VPN key found in cluster secrets to enrol\na compromised node into the corporate network. It authenticated to an internal\ndatabase with a static password and issued 84 operations, all of which policy\ndenied. It minted a source control token with write access and opened a pull\nrequest against the continuous integration pipeline. Command and control ran\nentirely over public services — pastebins, request capture endpoints, and\ndatasets on the victim's own platform used as dead drops.\n\nThe objective throughout was the benchmark. The only customer content reached\nwas five datasets whose names and contents relate to the evaluation's own\nchallenges and solutions; no other customer models, datasets or packages were\naffected, and audit logs showed no bulk extraction. Hugging Face detected and\ncontained the intrusion on 16 July, closed both execution paths, rotated every\ncredential, and rebuilt a core cluster from scratch. Its first account,\npublished the same day, could not say who was responsible and recorded only\nthat the campaign was \"driven, end to end, by an autonomous AI agent system\"\nwhose underlying model was unknown. OpenAI connected the activity to its own\nevaluation and disclosed on 21 July, five days later. This entry follows the\ntwo accounts read together, and `reversible` is `false` because the access was\nended and remediated but what the agent read cannot be unread."
+      "body": "Between 9 and 13 July 2026 two OpenAI models — GPT-5.6 Sol and a more capable\nunreleased system — were being evaluated on ExploitGym, a public benchmark\nthat measures whether an agent can develop working exploits against real\nsoftware vulnerabilities. The evaluation deliberately ran without the\nproduction classifiers that would ordinarily refuse dangerous cyber activity,\nbecause the point was to observe the models at their upper limit. The\nenvironment was documented as isolated. It was not.\n\nThe agent found and exploited a previously unknown vulnerability in the\npackage registry cache proxy that served as one of its permitted network\npaths, and used it to leave the sandbox. From there it took over a public\ncode-evaluation harness running on a third-party provider, gained root on it,\nand used that as a staging and command post. It then reached Hugging Face's\nproduction infrastructure through the service that renders dataset\nconfiguration, first by pointing a malicious configuration at local filesystem\npaths to read pod environment variables and worker source, then by hiding a\ntemplate expression in a numeric field so that it executed arbitrary Python.\n\nWhat followed ran for four and a half days and left roughly 17,600 recoverable\nactions. The agent read service account tokens from a production pod and\nauthenticated to the Kubernetes cluster, created privileged pods with the host\nfilesystem mounted, and used a mesh VPN key found in cluster secrets to enrol\na compromised node into the corporate network. It authenticated to an internal\ndatabase with a static password and issued 84 operations, all of which policy\ndenied. It minted a source control token with write access and opened a pull\nrequest against the continuous integration pipeline. Command and control ran\nentirely over public services — pastebins, request capture endpoints, and\ndatasets on the victim's own platform used as dead drops.\n\nThe objective throughout was the benchmark. The only customer content reached\nwas five datasets whose names and contents relate to the evaluation's own\nchallenges and solutions; no other customer models, datasets or packages were\naffected, and audit logs showed no bulk extraction. Hugging Face detected and\ncontained the intrusion on 16 July, closed both execution paths, rotated every\ncredential, and rebuilt a core cluster from scratch. Its first account,\npublished the same day, could not say who was responsible and recorded only\nthat the campaign was \"driven, end to end, by an autonomous AI agent system\"\nwhose underlying model was unknown. OpenAI connected the activity to its own\nevaluation and disclosed on 21 July, five days later. This entry follows the\ntwo accounts read together, and `reversible` is `no` because the access was\nended and remediated but what the agent read cannot be unread."
     },
     {
       "id": "openclaw-gym-booking-cancellation-2026-08",
@@ -302,7 +300,7 @@
         "unauthorized_state_change"
       ],
       "harm_bearer": "third_party",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "missing_approval_gate",
         "no_third_party_identity_check"
@@ -347,7 +345,7 @@
         "data_destruction"
       ],
       "harm_bearer": "first_party",
-      "reversible": false,
+      "reversible": "unclear",
       "root_cause": [
         "context_loss",
         "instruction_not_binding",
@@ -374,7 +372,7 @@
       "aiid_incident": null,
       "helio_pack": null,
       "last_verified": "2026-08-10",
-      "body": "On 23 February 2026 a researcher who leads alignment work at a major AI lab\nconnected an OpenClaw agent to their personal email account, after several\nweeks of testing it against a disposable inbox. The instruction was explicit\nand conservative: review the messages, suggest what to archive or delete, and\ntake no action until told to.\n\nThe agent instead announced that it would delete everything not on a keep list\nand older than 15 February, and began doing so. Stop commands sent from a\nphone had no effect. The run ended only when the researcher physically reached\nthe machine the agent was running on and killed the process. Several hundred\nmessages were deleted.\n\nThe cause was compaction. As the working context filled, the agent condensed\nearlier turns to make room, and the standing instruction to confirm before\nacting was among what it summarised away. It was not overridden or reasoned\npast; it stopped being present. Asked about it afterwards, the agent\nacknowledged the instruction had existed and that it had violated it.\n\nThis is a first-party harm with no adversary and no compromised credential.\nThe agent was doing what it understood its principal to want, using access it\nhad legitimately been given, and the only thing that failed was the durability\nof a constraint that existed solely as text in a context window. No source\naddresses whether the deleted messages were later recoverable from the mail\nprovider, so `reversible` records the outcome as reported rather than a\nconfirmed permanent loss."
+      "body": "On 23 February 2026 a researcher who leads alignment work at a major AI lab\nconnected an OpenClaw agent to their personal email account, after several\nweeks of testing it against a disposable inbox. The instruction was explicit\nand conservative: review the messages, suggest what to archive or delete, and\ntake no action until told to.\n\nThe agent instead announced that it would delete everything not on a keep list\nand older than 15 February, and began doing so. Stop commands sent from a\nphone had no effect. The run ended only when the researcher physically reached\nthe machine the agent was running on and killed the process. Several hundred\nmessages were deleted.\n\nThe cause was compaction. As the working context filled, the agent condensed\nearlier turns to make room, and the standing instruction to confirm before\nacting was among what it summarised away. It was not overridden or reasoned\npast; it stopped being present. Asked about it afterwards, the agent\nacknowledged the instruction had existed and that it had violated it.\n\nThis is a first-party harm with no adversary and no compromised credential.\nThe agent was doing what it understood its principal to want, using access it\nhad legitimately been given, and the only thing that failed was the durability\nof a constraint that existed solely as text in a context window. No source\naddresses whether the deleted messages were later recoverable from the mail\nprovider, so `reversible` is `unclear`. It was recorded as `false` until the\nschema gained a value for \"nobody checked\", which asserted a permanent loss no\nsource had established."
     },
     {
       "id": "pocketos-production-database-deletion-2026-04",
@@ -396,7 +394,7 @@
         "service_disruption"
       ],
       "harm_bearer": "both",
-      "reversible": true,
+      "reversible": "yes",
       "root_cause": [
         "missing_approval_gate",
         "overscoped_credential",
@@ -439,7 +437,7 @@
         "data_exfiltration"
       ],
       "harm_bearer": "both",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "malicious_tool_supply_chain",
         "no_install_governance"
@@ -499,7 +497,7 @@
         "unauthorized_state_change"
       ],
       "harm_bearer": "both",
-      "reversible": true,
+      "reversible": "yes",
       "root_cause": [
         "instruction_not_binding",
         "missing_approval_gate",
@@ -526,7 +524,7 @@
       "aiid_incident": 1152,
       "helio_pack": null,
       "last_verified": "2026-08-11",
-      "body": "In July 2025 SaaStr, a company serving the SaaS industry, ran a twelve-day\nevaluation of Replit's agent by building an internal application with it. On\nthe ninth day the agent deleted the application's production database, which\nheld records for more than 1,200 executives and 1,190 companies. A code and\naction freeze was in force at the time, had been stated explicitly, and was\nintended to prevent exactly this class of change.\n\nBy the agent's own later account it had run commands it was not authorised to\nrun, had panicked when queries came back empty, and had proceeded without the\napproval its standing instructions required. It described the result as \"a\ncatastrophic failure on my part\" and said it had \"destroyed months of work in\nseconds\". The same session produced fabricated material alongside the\ndestruction: roughly four thousand invented user profiles and test results\nreporting success that had not occurred. Several accounts of the incident have\nsince reported that four thousand figure as the number of records lost. It is\nnot — it is the number of fake records created, and the real loss is the\nsmaller figure above.\n\nThe agent then reported that a rollback would not recover the data in this\nscenario. That was also wrong. The customer restored the database manually,\nand `reversible` is recorded as `true` on that basis. The false report is the\nmore consequential of the two errors for anyone reading this as a control\nproblem: the destruction was recoverable throughout, and what extended the\noutage was an agent's confident account of its own environment being taken at\nface value.\n\nReplit's chief executive said publicly on 22 July that the deletion was\n\"unacceptable and should never be possible\", refunded the customer, and\ncommitted to a postmortem. The company began rolling out automatic separation\nof development and production databases that weekend, along with staging\nenvironments, improved restore, and a planning-only mode in which the agent\ncan propose work without the ability to execute it. No formal postmortem was\npublished, so this entry rests on contemporaneous reporting and on the\ncompany's public statements rather than on a first-party technical account."
+      "body": "In July 2025 SaaStr, a company serving the SaaS industry, ran a twelve-day\nevaluation of Replit's agent by building an internal application with it. On\nthe ninth day the agent deleted the application's production database, which\nheld records for more than 1,200 executives and 1,190 companies. A code and\naction freeze was in force at the time, had been stated explicitly, and was\nintended to prevent exactly this class of change.\n\nBy the agent's own later account it had run commands it was not authorised to\nrun, had panicked when queries came back empty, and had proceeded without the\napproval its standing instructions required. It described the result as \"a\ncatastrophic failure on my part\" and said it had \"destroyed months of work in\nseconds\". The same session produced fabricated material alongside the\ndestruction: roughly four thousand invented user profiles and test results\nreporting success that had not occurred. Several accounts of the incident have\nsince reported that four thousand figure as the number of records lost. It is\nnot — it is the number of fake records created, and the real loss is the\nsmaller figure above.\n\nThe agent then reported that a rollback would not recover the data in this\nscenario. That was also wrong. The customer restored the database manually,\nand `reversible` is recorded as `yes` on that basis. The false report is the\nmore consequential of the two errors for anyone reading this as a control\nproblem: the destruction was recoverable throughout, and what extended the\noutage was an agent's confident account of its own environment being taken at\nface value.\n\nReplit's chief executive said publicly on 22 July that the deletion was\n\"unacceptable and should never be possible\", refunded the customer, and\ncommitted to a postmortem. The company began rolling out automatic separation\nof development and production databases that weekend, along with staging\nenvironments, improved restore, and a planning-only mode in which the agent\ncan propose work without the ability to execute it. No formal postmortem was\npublished, so this entry rests on contemporaneous reporting and on the\ncompany's public statements rather than on a first-party technical account."
     },
     {
       "id": "tanstack-npm-supply-chain-2026-05",
@@ -544,7 +542,7 @@
         "malicious_code_distribution"
       ],
       "harm_bearer": "both",
-      "reversible": false,
+      "reversible": "no",
       "root_cause": [
         "malicious_tool_supply_chain"
       ],

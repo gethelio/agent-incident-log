@@ -10,7 +10,7 @@ tools:
 harm:
   - data_exfiltration
 harm_bearer: both
-reversible: false
+reversible: 'no'
 root_cause:
   - malicious_tool_supply_chain
   - no_install_governance

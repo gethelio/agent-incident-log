@@ -67,7 +67,6 @@
     },
     "tools": {
       "type": "array",
-      "minItems": 1,
       "uniqueItems": true,
       "items": {
         "type": "string",
@@ -111,7 +110,12 @@
       ]
     },
     "reversible": {
-      "type": "boolean"
+      "type": "string",
+      "enum": [
+        "yes",
+        "no",
+        "unclear"
+      ]
     },
     "root_cause": {
       "type": "array",
@@ -210,6 +214,29 @@
     }
   },
   "allOf": [
+    {
+      "$comment": "`tools` records what the agent could reach. On an infrastructure entry no agent acts at all, so an empty list is the honest answer; everywhere else at least one value is still required.",
+      "if": {
+        "properties": {
+          "surface": {
+            "not": {
+              "const": "infrastructure"
+            }
+          }
+        },
+        "required": [
+          "surface"
+        ]
+      },
+      "then": {
+        "properties": {
+          "tools": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
     {
       "if": {
         "properties": {

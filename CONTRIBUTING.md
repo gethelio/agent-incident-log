@@ -19,6 +19,12 @@
 
 See [EDITORIAL_POLICY.md](EDITORIAL_POLICY.md) in full. In short: two independent sources, organizations not individuals, original prose, no call to action, and an honest `prevented_by_action_governance` value.
 
+## Three fields that are easy to get wrong
+
+- **`publisher`** is the platform, not the author, when a source is written by someone under their own name — `X`, `Substack`, `Medium`. Rule 2 keeps individuals out of entries, and a byline here would put them straight back in. Use the masthead for ordinary publications.
+- **`reversible`** is `yes`, `no` or `unclear`. Quote `yes` and `no`: some YAML parsers read them as booleans. Reach for `unclear` when no source settles whether the harm was undone — `no` claims permanence, and claiming it unsourced is the kind of thing this log exists to avoid.
+- **`tools`** may be empty (`[]`) only when `surface` is `infrastructure`, where no agent invokes anything. Everywhere else at least one value is required. Do not stretch for a loose fit just to fill it.
+
 ## After you submit
 
 1. CI validates the schema and mechanical constraints.

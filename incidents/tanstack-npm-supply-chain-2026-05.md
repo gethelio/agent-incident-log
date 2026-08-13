@@ -12,7 +12,7 @@ harm:
   - data_exfiltration
   - malicious_code_distribution
 harm_bearer: both
-reversible: false
+reversible: 'no'
 root_cause:
   - malicious_tool_supply_chain
 prevented_by_action_governance: partially

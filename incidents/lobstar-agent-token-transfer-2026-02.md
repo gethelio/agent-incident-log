@@ -12,7 +12,7 @@ tools:
 harm:
   - financial_loss
 harm_bearer: first_party
-reversible: false
+reversible: 'no'
 root_cause:
   - context_loss
   - missing_approval_gate

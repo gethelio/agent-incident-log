@@ -12,7 +12,7 @@ tools:
 harm:
   - malicious_code_distribution
 harm_bearer: both
-reversible: true
+reversible: 'yes'
 root_cause:
   - malicious_tool_supply_chain
   - overscoped_credential
