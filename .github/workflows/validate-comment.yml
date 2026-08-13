@@ -1,0 +1,99 @@
+name: validate-comment
+
+# Posts the parsed-front-matter comment that validate.yml prepares.
+#
+# Split out because this repo accepts pull requests from forks. A fork's
+# pull_request run gets a read-only GITHUB_TOKEN, so posting from inside that
+# run returns 403 — broken for precisely the external contributors the comment
+# is meant to serve. A workflow_run job executes in the base repository's
+# context with a writable token regardless of where the PR came from.
+#
+# SECURITY. This workflow is privileged and is triggered by a run of untrusted
+# code, so two rules hold:
+#
+#   1. It never checks out, builds or executes the head branch. It downloads an
+#      artifact and posts markdown, nothing else. Adding a checkout of the PR
+#      here would be a worse vulnerability than the bug it fixes.
+#   2. The artifact is contributor-controlled data, not trusted input. The PR
+#      number is validated as a positive integer before use, because a crafted
+#      artifact could otherwise aim the comment at an arbitrary issue. The body
+#      is posted as markdown, which cannot execute anything.
+#
+# Note that workflow_run only fires for the version of this file on the default
+# branch, so changes here cannot be exercised by their own pull request.
+
+on:
+  workflow_run:
+    workflows: ['validate']
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    # Only for pull_request-triggered validate runs.
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Download comment payload
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: incident-front-matter
+          path: comment
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post or update PR comment
+        # A validate run that died before uploading leaves no artifact. That is
+        # already visible as a failed check, so skip quietly rather than adding
+        # a second red X on an unrelated workflow.
+        if: steps.download.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+
+            const raw = fs.readFileSync('comment/pr-number', 'utf8').trim()
+            const issue_number = Number(raw)
+            if (!Number.isInteger(issue_number) || issue_number <= 0) {
+              core.setFailed(`Unusable PR number in artifact: ${JSON.stringify(raw)}`)
+              return
+            }
+
+            const body = fs.readFileSync('comment/body.md', 'utf8')
+            if (!body.trim()) {
+              core.info('No incident files changed in this PR; nothing to comment.')
+              return
+            }
+
+            const { owner, repo } = context.repo
+            const marker = '<!-- incident-front-matter -->'
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            })
+            const existing = comments.find((c) => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              })
+              core.info(`Updated comment on #${issue_number}`)
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              })
+              core.info(`Created comment on #${issue_number}`)
+            }
