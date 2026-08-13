@@ -41,15 +41,19 @@ jobs:
         working-directory: scripts
         run: npm run build
 
-      - name: Commit dist if changed
+      - name: Commit generated files if changed
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add dist/incidents.json
+          # README.md as well as the dataset: build.mjs regenerates the
+          # distribution sentence between its markers, and staging only dist
+          # would leave that edit behind in the runner and the counter stale
+          # on the front page.
+          git add dist/incidents.json README.md
           if git diff --staged --quiet; then
-            echo 'No dist changes'
+            echo 'No generated changes'
           else
-            git commit -m 'chore: regenerate dist/incidents.json'
+            git commit -m 'chore: regenerate dataset and README counter'
             git push
           fi
 
