@@ -64,25 +64,19 @@ jobs:
       # indefinitely and nothing would report it. Always run, and be loud.
       - name: Notify helio.so
         env:
-          # INCIDENT_REVALIDATE_URL is the name this holds now, falling back to
-          # VERCEL_DEPLOY_HOOK_URL so the secret can be renamed without a window
-          # where a publish reaches nothing. Drop the fallback once the old
-          # secret is deleted.
-          #
-          # The old name was wrong in a way that invites a bad fix. This is not
-          # a Vercel deploy hook and never was one in practice: a deploy hook
-          # does not propagate new entries at all, because Next's Data Cache
-          # survives deployments and Vercel restores `.next/cache` between
-          # builds, so the rebuild re-serves the payload cached before the merge
-          # and deploys without the new entry, green the whole way. What this
-          # actually holds is helio.so's cache-purge endpoint with its shared
-          # secret in the query string. Anyone reading the old name would go
-          # looking for a hook in the Vercel dashboard and, not finding one,
-          # might helpfully create it.
-          INCIDENT_REVALIDATE_URL: ${{ secrets.INCIDENT_REVALIDATE_URL || secrets.VERCEL_DEPLOY_HOOK_URL }}
+          # helio.so's cache-purge endpoint, shared secret included in the query
+          # string. Not a Vercel deploy hook, despite what this secret was
+          # called until August 2026: a deploy hook does not propagate new
+          # entries at all, because Next's Data Cache survives deployments and
+          # Vercel restores `.next/cache` between builds, so the rebuild
+          # re-serves the payload cached before the merge and deploys without
+          # the new entry, green the whole way. The old name sent readers to
+          # look for a hook in the Vercel dashboard, and the risk was that one
+          # of them would helpfully create it.
+          INCIDENT_REVALIDATE_URL: ${{ secrets.INCIDENT_REVALIDATE_URL }}
         run: |
           if [ -z "$INCIDENT_REVALIDATE_URL" ]; then
-            echo "::warning title=Revalidation URL not configured::Neither INCIDENT_REVALIDATE_URL nor VERCEL_DEPLOY_HOOK_URL is set. The dataset was rebuilt but helio.so was NOT notified, and will serve stale data until the weekly revalidate catches up."
+            echo "::warning title=Revalidation URL not configured::INCIDENT_REVALIDATE_URL is not set. The dataset was rebuilt but helio.so was NOT notified, and will serve stale data until the weekly revalidate catches up."
             exit 0
           fi
           # -L because helio.so and www.helio.so redirect to one another and the
