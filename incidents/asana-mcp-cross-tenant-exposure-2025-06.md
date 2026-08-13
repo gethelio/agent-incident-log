@@ -9,7 +9,6 @@ tools:
   - saas_app
 harm:
   - data_exposure
-harm_bearer: third_party
 reversible: false
 root_cause:
   - tenant_isolation_failure
