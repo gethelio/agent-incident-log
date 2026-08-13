@@ -58,3 +58,5 @@ anything that appears to belong to another organization — reflect that
 uncertainty. Asana also issued no public statement, communicating only with
 the organizations it had identified as affected, so the public record here
 rests on reporting of those notices rather than on a first-party account.
+
+<!-- TEMPORARY: CI smoke test for validate-comment. Not for merge. -->
